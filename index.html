@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🎲 Múltiple herramienta v4.0 - Multi API</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .main-container { 
+    max-width: 950px; 
+    width: 100%; 
+    margin: 0 auto;
+    flex: 1;
+  }
+  
+  .header {
+    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .header h1 { font-size: 1.8rem; color: #ffd966; }
+  .header h3 { color: #87ceeb; font-size: 0.9rem; margin-top: 5px; }
+  .version { background: rgba(0,0,0,0.3); display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; color: #ffd966; margin-top: 10px; }
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    background: #0f1722;
+    border: none;
+    border-radius: 12px;
+    color: #87ceeb;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .box {
+    background: linear-gradient(135deg, #1e2a3a 0%, #0f1722 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #87ceeb;
+  }
+
+  input, select, button, textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #2c3e50;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #0f1722;
+    color: #e2e8f0;
+  }
+
+  button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .menu-botones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .menu-botones button {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    font-size: 0.7rem;
+    padding: 10px 5px;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .menu-botones button.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  }
+
+  .ejemplo-tooltip {
+    position: absolute;
+    background: linear-gradient(135deg, #ffd966 0%, #ffb347 100%);
+    color: #1a1a2e;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.3s ease;
+    pointer-events: none;
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-combos {
+    display: none;
+    padding: 15px;
+    background: rgba(15, 23, 34, 0.8);
+    border-radius: 15px;
+    margin-top: 15px;
+  }
+  .panel-combos.active { display: block; }
+
+  .fila-opcion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .fila-opcion label {
+    margin: 0;
+    min-width: 140px;
+    font-size: 0.75rem;
+    color: #87ceeb;
+  }
+  .fila-opcion input, .fila-opcion select {
+    flex: 1;
+    min-width: 120px;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+  .fila-opcion button { flex: 0.4; min-width: 100px; padding: 8px; }
+
+  .resultado-gen {
+    background: rgba(0,0,0,0.7);
+    border-radius: 12px;
+    padding: 15px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 13px;
+    margin-top: 15px;
+    display: none;
+    border: 1px solid #ffd966;
+    color: #ffd966;
+  }
+  .resultado-gen.visible { display: block; }
+
+  .progress-container {
+    background: #0f1722;
+    border-radius: 30px;
+    padding: 15px;
+    margin-top: 20px;
+    display: none;
+  }
+  .progress-container.visible { display: block; }
+  .progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #2c3e50;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #ffd966);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+  }
+  .progress-text {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #00ff88;
+    margin-bottom: 5px;
+  }
+  .progress-stats {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #87ceeb;
+    margin-top: 8px;
+  }
+
+  .file-list {
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+  .file-item input { width: auto; margin: 0; }
+  .file-item label { margin: 0; flex: 1; cursor: pointer; color: #87ceeb; }
+
+  .velocidad-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    flex-wrap: wrap;
+  }
+  .velocidad-control label { margin: 0; color: #87ceeb; }
+  .velocidad-control input { width: 150px; }
+  .velocidad-control span { color: #00ff88; font-weight: bold; }
+
+  .btn-descarga {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    margin-top: 10px;
+  }
+  .btn-descarga:hover { background: linear-gradient(135deg, #00cec9 0%, #00b894 100%); }
+  .btn-descarga:disabled { background: #2c3e50; }
+
+  .footer-btn {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+  .btn-iluminaty {
+    background: linear-gradient(135deg, #ffd966 0%, #ffb347 100%);
+    color: #1a1a2e;
+    font-weight: bold;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    width: auto;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  .btn-iluminaty:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+
+  /* Estilos para el panel de personalizado */
+  .file-area {
+    border: 2px dashed #ffd966;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.3);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .file-area:hover {
+    border-color: #00ff88;
+    background: rgba(0,255,136,0.1);
+  }
+  .file-area.drag-over {
+    border-color: #00ff88;
+    background: rgba(0,255,136,0.2);
+  }
+  .file-area p {
+    color: #e2e8f0;
+    margin: 0;
+  }
+  .file-area .icon {
+    font-size: 2rem;
+    color: #ffd966;
+    margin-bottom: 10px;
+  }
+  .preview-area {
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    padding: 12px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.75rem;
+    margin-top: 10px;
+    color: #87ceeb;
+    border: 1px solid #2c3e50;
+  }
+  .info-text {
+    font-size: 0.75rem;
+    color: #87ceeb;
+    margin-top: 5px;
+  }
+  .badge {
+    background: #ffd966;
+    color: #1a1a2e;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+  }
+  .button-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .button-container button {
+    flex: 1;
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  <div class="header">
+    <h1>🎲 Múltiple herramienta</h1>
+    <h3>♾️ Desarrollado por Angel Exspectrus</h3>
+    <div class="version">⚡ Versión 4.0 multi Api ⚡</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="generador">🎲 Generador de Combos</button>
+    <button class="tab-btn" data-tab="unir">🔗 Unir Combos</button>
+    <button class="tab-btn" data-tab="duplicados">🗑️ Eliminar Duplicados</button>
+  </div>
+
+  <!-- Pestaña Generador -->
+  <div id="tab-generador" class="tab-content active">
+    <div class="box">
+      <div class="menu-botones" id="menuBotones">
+        <button class="tipo-btn" data-tipo="1" data-ejemplo="juan2023:juan2023">1.- User:Pass<br>(1996-2050)</button>
+        <button class="tipo-btn" data-tipo="2" data-ejemplo="juan:pedro">2.- User:User<br>(Nombre-Nombre)</button>
+        <button class="tipo-btn" data-tipo="3" data-ejemplo="juan123:juan123">3.- User:Pass<br>(1-999)</button>
+        <button class="tipo-btn" data-tipo="4" data-ejemplo="aBc123:XyZ789">4.- Alfanuméricos<br></button>
+        <button class="tipo-btn" data-tipo="5" data-ejemplo="juan123:juan123">5.- User:Numero<br>(123 a 123..9)</button>
+        <button class="tipo-btn" data-tipo="6" data-ejemplo="juan84732:juan84732">6.- User:Numero<br>(12345..Random)</button>
+        <button class="tipo-btn" data-tipo="7" data-ejemplo="182828:828299">7.- Combos numéricos<br>(numero:número)</button>
+        <button class="tipo-btn" data-tipo="8" data-ejemplo="juan123:abcxyz789">8.- Nombre:<br>Alfanuméricos</button>
+        <button class="tipo-btn" data-tipo="9" data-ejemplo="adam123:adam123">9.- Personalizado<br>(Pedorrizador)</button>
+      </div>
+
+      <div id="panel1" class="panel-combos active">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file1" value="combos_1996_2050"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant1" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Combinación usuario:</label><select id="userCombo1"><option value="1">Usuario/Número</option><option value="2">Número/Usuario</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>🎨 Combinación contraseña:</label><select id="passCombo1"><option value="1">Password/Número</option><option value="2">Número/Password</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato usuario:</label><select id="formatUser1"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato contraseña:</label><select id="formatPass1"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen1">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel2" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file2" value="combos_nombre_nombre"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant2" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Formato del combo:</label><select id="formatoCombo2"><option value="1">Nombre:Nombre</option><option value="2">Nombre:Apellido</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato usuario:</label><select id="formatUser2"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato contraseña:</label><select id="formatPass2"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen2">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel3" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file3" value="combos_1_999"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant3" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Combinación usuario:</label><select id="userCombo3"><option value="1">Usuario/Número</option><option value="2">Número/Usuario</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>🎨 Combinación contraseña:</label><select id="passCombo3"><option value="1">Password/Número</option><option value="2">Número/Password</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato usuario:</label><select id="formatUser3"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato contraseña:</label><select id="formatPass3"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen3">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel4" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file4" value="combos_alfanumericos"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant4" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>📏 Longitud usuario:</label><input type="number" id="userLen4" value="8" min="3" max="20"></div>
+        <div class="fila-opcion"><label>📏 Longitud contraseña:</label><input type="number" id="passLen4" value="8" min="3" max="20"></div>
+        <div class="fila-opcion"><label>🎨 Tipo de combo:</label><select id="tipoAlfa4"><option value="1">Solo letras</option><option value="2">Letras y números</option><option value="3">Letras y año</option></select></div>
+        <div class="fila-opcion"><label>📝 Mayúsculas/minúsculas:</label><select id="caseAlfa4"><option value="1">Solo mayúsculas</option><option value="2">Solo minúsculas</option><option value="3">Ambas (mezcla aleatoria)</option></select></div>
+        <div class="fila-opcion"><label>📍 Posición año:</label><select id="yearPos4"><option value="left">Izquierda</option><option value="right">Derecha</option><option value="both">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen4">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel5" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file5" value="combos_numero_secuencial"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant5" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Combinación usuario:</label><select id="userCombo5"><option value="1">Usuario/Número</option><option value="2">Número/Usuario</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen5">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel6" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file6" value="combos_numero_aleatorio"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant6" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Combinación usuario:</label><select id="userCombo6"><option value="1">Usuario/Número</option><option value="2">Número/Usuario</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen6">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel7" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file7" value="combos_numericos"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant7" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>📏 Longitud usuario:</label><input type="number" id="userLen7" value="5" min="1" max="10"></div>
+        <div class="fila-opcion"><label>📏 Longitud contraseña:</label><input type="number" id="passLen7" value="5" min="1" max="10"></div>
+        <div class="fila-opcion"><label>🎨 Tipo de contraseña:</label><select id="tipoPass7"><option value="1">Consecutiva (12345)</option><option value="2">Aleatoria</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen7">✅ Generar Combos</button></div>
+      </div>
+
+      <div id="panel8" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo:</label><input type="text" id="file8" value="combos_nombre_alfanumerico"></div>
+        <div class="fila-opcion"><label>🔢 Cantidad:</label><input type="number" id="cant8" value="100" min="1" max="50000"></div>
+        <div class="fila-opcion"><label>🎨 Tipo número usuario:</label><select id="tipoNumUser8"><option value="1">Números 1-999</option><option value="2">Años 2022-2028</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><label>📏 Longitud contraseña:</label><input type="number" id="passLen8" value="8" min="3" max="20"></div>
+        <div class="fila-opcion"><label>🎨 Tipo contraseña:</label><select id="tipoPass8"><option value="1">Solo letras</option><option value="2">Letras y números</option><option value="3">Letras y año</option></select></div>
+        <div class="fila-opcion"><label>📝 Formato usuario:</label><select id="formatUser8"><option value="1">Minúscula</option><option value="2">Primera mayúscula</option><option value="3">Ambos</option></select></div>
+        <div class="fila-opcion"><button id="gen8">✅ Generar Combos</button></div>
+      </div>
+
+      <!-- Panel 9: Personalizado con opciones de formato -->
+      <div id="panel9" class="panel-combos">
+        <div class="fila-opcion"><label>📁 Nombre archivo salida:</label><input type="text" id="file9" value="combos_personalizados"></div>
+        
+        <div class="file-area" id="dropZoneNames">
+          <div class="icon">📄</div>
+          <p>📂 Añade tu archivo de nombres</p>
+          <input type="file" id="namesFileInput" accept=".txt" style="display: none;">
+        </div>
+        <div id="namesInfo" class="info-text">Ningún archivo cargado</div>
+        
+        <div class="button-container">
+          <button type="button" id="previewNamesBtn" style="background: #2c3e50;">👁️ Vista previa nombres</button>
+        </div>
+        <div id="namesPreview" class="preview-area" style="display: none;"></div>
+
+        <label style="margin-top: 15px;">📝 Patrones de combinación (uno por línea):</label>
+        <textarea id="combinationPatterns" rows="6" placeholder="Ejemplos:
+juan123:juan1234
+Juan2024:2024juan
+juan:juan2025
+juan:juan"></textarea>
+        
+        <div class="button-container">
+          <button type="button" id="loadPatternsBtn" style="background: #2c3e50;">📂 Cargar patrones</button>
+          <button type="button" id="savePatternsBtn" style="background: #2c3e50;">💾 Guardar patrones</button>
+        </div>
+        <input type="file" id="loadPatternsFileInput" accept=".txt" style="display: none;">
+
+        <!-- Opciones de formato para el generador personalizado -->
+        <label style="margin-top: 15px;">📝 Formato del USUARIO:</label>
+        <select id="formatUserPersonalizado">
+          <option value="1">Minúscula (ej: adam)</option>
+          <option value="2">Primera mayúscula (ej: Adam)</option>
+          <option value="3">Ambos (mezcla aleatoria)</option>
+        </select>
+
+        <label style="margin-top: 10px;">📝 Formato de la CONTRASEÑA:</label>
+        <select id="formatPassPersonalizado">
+          <option value="1">Minúscula (ej: adam)</option>
+          <option value="2">Primera mayúscula (ej: Adam)</option>
+          <option value="3">Ambos (mezcla aleatoria)</option>
+        </select>
+
+        <div class="fila-opcion" style="margin-top: 15px;">
+          <button id="gen9">✅ Generar Combos Personalizados</button>
+        </div>
+      </div>
+
+      <div class="velocidad-control">
+        <label>⚡ Velocidad de generación:</label>
+        <input type="range" id="velocidadSlider" min="0" max="20" value="5">
+        <span id="velocidadValor">5ms</span>
+        <span style="color:#87ceeb;">(menor = más rápido)</span>
+      </div>
+
+      <div id="resultadoGen" class="resultado-gen"></div>
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-text" id="progressText">🚀 Generando combos...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-stats" id="progressStats"></div>
+      </div>
+      
+      <button id="btnDescargarGenerador" class="btn-descarga" style="margin-top:15px;" disabled>💾 Descargar Combos Generados</button>
+    </div>
+  </div>
+
+  <!-- Pestaña Unir Combos -->
+  <div id="tab-unir" class="tab-content">
+    <div class="box">
+      <h3 style="color:#ffd966; margin-bottom:15px;">🔗 Unir Múltiples Archivos de Combos</h3>
+      <label>📂 Selecciona archivos .txt para unir:</label>
+      <input type="file" id="unirFileInput" multiple accept=".txt">
+      <div id="unirFileList" class="file-list"></div>
+      <div class="fila-opcion" style="margin-top:15px;">
+        <label>📁 Nombre del archivo resultado:</label>
+        <input type="text" id="unirNombre" value="combos_unidos">
+      </div>
+      <button id="btnProcesarUnir">🔗 Procesar Unión</button>
+      <button id="btnDescargarUnir" class="btn-descarga" disabled>💾 Descargar Resultado</button>
+      <div id="unirResultado" class="resultado-gen"></div>
+    </div>
+  </div>
+
+  <!-- Pestaña Eliminar Duplicados -->
+  <div id="tab-duplicados" class="tab-content">
+    <div class="box">
+      <h3 style="color:#ffd966; margin-bottom:15px;">🗑️ Eliminar Duplicados de un Archivo</h3>
+      <label>📂 Selecciona un archivo .txt:</label>
+      <input type="file" id="dupFileInput" accept=".txt">
+      <div class="fila-opcion" style="margin-top:15px;">
+        <label>📁 Nombre del archivo resultado:</label>
+        <input type="text" id="dupNombre" value="combos_sin_duplicados">
+      </div>
+      <button id="btnProcesarDup">🗑️ Procesar Eliminación</button>
+      <button id="btnDescargarDup" class="btn-descarga" disabled>💾 Descargar Resultado</button>
+      <div id="dupResultado" class="resultado-gen"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-btn">
+  <button class="btn-iluminaty" onclick="window.open('https://angel-iluminaty.github.io/IluminatyPages/', '_blank')">🌟 Grupos Iluminaty 🌟</button>
+</div>
+
+<script>
+// ============= VARIABLES GLOBALES =============
+let delayGeneracion = 5;
+let ultimosCombosGenerados = [];
+let ultimoResultadoUnion = null;
+let ultimoResultadoDup = null;
+
+// Variables para el panel personalizado
+let nombresPersonalizados = [];
+let patronesPersonalizados = [];
+
+// ============= CONTROL DE VELOCIDAD =============
+const velocidadSlider = document.getElementById('velocidadSlider');
+const velocidadValor = document.getElementById('velocidadValor');
+velocidadSlider.addEventListener('input', () => {
+  delayGeneracion = parseInt(velocidadSlider.value);
+  velocidadValor.textContent = delayGeneracion + 'ms';
+});
+
+// ============= FUNCIÓN PARA MOSTRAR TOOLTIP =============
+function mostrarEjemploSobreBoton(boton, ejemplo) {
+  const tooltipExistente = document.querySelector('.ejemplo-tooltip');
+  if (tooltipExistente) tooltipExistente.remove();
+  
+  const tooltip = document.createElement('div');
+  tooltip.className = 'ejemplo-tooltip';
+  tooltip.textContent = `✨ ${ejemplo} ✨`;
+  
+  const rect = boton.getBoundingClientRect();
+  const menuRect = document.getElementById('menuBotones').getBoundingClientRect();
+  
+  tooltip.style.position = 'absolute';
+  tooltip.style.left = (rect.left - menuRect.left) + 'px';
+  tooltip.style.top = (rect.top - menuRect.top - 35) + 'px';
+  
+  document.getElementById('menuBotones').style.position = 'relative';
+  document.getElementById('menuBotones').appendChild(tooltip);
+  
+  setTimeout(() => {
+    if (tooltip && tooltip.remove) tooltip.remove();
+  }, 2500);
+}
+
+// ============= FUNCIÓN PARA LIMPIAR NOMBRES =============
+function limpiarNombre(texto) {
+  if (!texto) return '';
+  texto = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  texto = texto.replace(/[^a-zA-Z]/g, '');
+  texto = texto.replace(/\s/g, '');
+  if (texto.length === 0) {
+    const defaults = ['juan', 'pedro', 'carlos', 'luis', 'jose', 'angel', 'david', 'manuel'];
+    texto = defaults[Math.floor(Math.random() * defaults.length)];
+  }
+  return texto.toLowerCase();
+}
+
+// ============= APIS PARA NOMBRES =============
+const APIS_NOMBRES = [
+  async () => {
+    const res = await fetch('https://randomuser.me/api/');
+    const data = await res.json();
+    if (data?.results?.[0]) {
+      let nombre = limpiarNombre(data.results[0].name.first);
+      let apellido = limpiarNombre(data.results[0].name.last);
+      return { nombre, apellido };
+    }
+    return null;
+  },
+  async () => {
+    const res = await fetch('https://uinames.com/api/?region=spain&amount=1');
+    const data = await res.json();
+    if (data?.name && data?.surname) {
+      let nombre = limpiarNombre(data.name);
+      let apellido = limpiarNombre(data.surname);
+      return { nombre, apellido };
+    }
+    return null;
+  },
+  async () => {
+    const res = await fetch('https://fakerapi.it/api/v1/persons?_quantity=1&_locale=es_ES');
+    const data = await res.json();
+    if (data?.data?.[0]) {
+      let nombre = limpiarNombre(data.data[0].firstname);
+      let apellido = limpiarNombre(data.data[0].lastname);
+      return { nombre, apellido };
+    }
+    return null;
+  },
+  async () => {
+    const res = await fetch('https://random-data-api.com/api/v2/users?size=1');
+    const data = await res.json();
+    if (data?.first_name && data?.last_name) {
+      let nombre = limpiarNombre(data.first_name);
+      let apellido = limpiarNombre(data.last_name);
+      return { nombre, apellido };
+    }
+    return null;
+  }
+];
+
+const NOMBRES_LOCALES = ['juan', 'pedro', 'carlos', 'luis', 'jose', 'angel', 'david', 'manuel', 'javier', 'alejandro'];
+const APELLIDOS_LOCALES = ['vargas', 'lopez', 'garcia', 'martinez', 'fernandez', 'gonzalez', 'rodriguez', 'sanchez', 'perez', 'ruiz'];
+
+async function getRandomNameMultiAPI() {
+  for (const api of APIS_NOMBRES) {
+    try {
+      const result = await api();
+      if (result && result.nombre && result.nombre.length > 0 && result.apellido && result.apellido.length > 0) {
+        return result;
+      }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 50));
+  }
+  return {
+    nombre: NOMBRES_LOCALES[Math.floor(Math.random() * NOMBRES_LOCALES.length)],
+    apellido: APELLIDOS_LOCALES[Math.floor(Math.random() * APELLIDOS_LOCALES.length)]
+  };
+}
+
+// ============= FUNCIONES DE FORMATO =============
+function aplicarFormato(texto, opcion) {
+  if (!texto) return '';
+  if (opcion === '1') return texto.toLowerCase();
+  if (opcion === '2') return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  if (opcion === '3') {
+    return Math.random() > 0.5 ? texto.toLowerCase() : texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
+  return texto.toLowerCase();
+}
+
+function randomAlphanumeric(length, tipo = 'letras', caseType = 'ambas') {
+  let chars = '';
+  if (tipo === 'letras') chars = 'abcdefghijklmnopqrstuvwxyz';
+  else if (tipo === 'letras_numeros') chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  
+  if (caseType === 'mayusculas') chars = chars.toUpperCase();
+  else if (caseType === 'minusculas') chars = chars.toLowerCase();
+  else if (caseType === 'ambas') {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      let char = chars.charAt(Math.floor(Math.random() * chars.length));
+      if (Math.random() > 0.5 && /[a-z]/.test(char)) {
+        char = char.toUpperCase();
+      }
+      result += char;
+    }
+    return result;
+  }
+  
+  if (!chars) chars = 'abcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+  return result;
+}
+
+// ============= FUNCIONES PARA EL PANEL PERSONALIZADO =============
+function removeAccents(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+// Aplicar formato a un nombre según la opción seleccionada
+function aplicarFormatoPersonalizado(nombre, opcion) {
+  if (!nombre) return '';
+  const nombreLimpio = removeAccents(nombre).toLowerCase();
+  
+  if (opcion === '1') {
+    return nombreLimpio;
+  } else if (opcion === '2') {
+    return nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1);
+  } else {
+    // Opción 3: mezcla aleatoria
+    return Math.random() > 0.5 ? nombreLimpio : nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1);
+  }
+}
+
+// Extraer nombre base de un patrón (ej: de "juan123:juan1234" extrae "juan")
+function extractNameFromPattern(pattern) {
+  if (!pattern.includes(':')) return null;
+  const username = pattern.split(':')[0];
+  const match = username.match(/^([a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+)/);
+  return match ? match[1] : null;
+}
+
+// Analizar patrón para obtener plantilla
+function analyzePattern(pattern, formatUserOption, formatPassOption) {
+  if (!pattern.includes(':')) return null;
+  
+  const [username, password] = pattern.split(':');
+  const baseName = extractNameFromPattern(pattern);
+  if (!baseName) return null;
+  
+  // Determinar si el nombre base en el patrón usa mayúscula inicial
+  const isCapitalizedInPattern = baseName[0] === baseName[0].toUpperCase();
+  
+  // Aplicar formato al nombre base según la opción del usuario
+  const nombreBaseLimpio = removeAccents(baseName).toLowerCase();
+  let nombreFormateadoPatron;
+  
+  if (formatUserOption === '1') {
+    nombreFormateadoPatron = nombreBaseLimpio;
+  } else if (formatUserOption === '2') {
+    nombreFormateadoPatron = nombreBaseLimpio.charAt(0).toUpperCase() + nombreBaseLimpio.slice(1);
+  } else {
+    nombreFormateadoPatron = isCapitalizedInPattern ? 
+      nombreBaseLimpio.charAt(0).toUpperCase() + nombreBaseLimpio.slice(1) : 
+      nombreBaseLimpio;
+  }
+  
+  // Extraer sufijo del usuario (lo que viene después del nombre base)
+  let userSuffix = username.substring(baseName.length);
+  
+  // Crear plantilla de contraseña
+  let passwordTemplate = password;
+  
+  // Reemplazar el nombre en la contraseña (en el formato original del patrón)
+  const nombreOriginalEnPatron = isCapitalizedInPattern ? 
+    baseName : baseName.toLowerCase();
+  const nombreAlternativoEnPatron = isCapitalizedInPattern ? 
+    baseName.toLowerCase() : baseName.charAt(0).toUpperCase() + baseName.slice(1);
+  
+  if (passwordTemplate.includes(nombreOriginalEnPatron)) {
+    passwordTemplate = passwordTemplate.replace(new RegExp(escapeRegex(nombreOriginalEnPatron), 'g'), "{{NOMBRE}}");
+  }
+  if (passwordTemplate.includes(nombreAlternativoEnPatron)) {
+    passwordTemplate = passwordTemplate.replace(new RegExp(escapeRegex(nombreAlternativoEnPatron), 'g'), "{{NOMBRE_ALT}}");
+  }
+  
+  return {
+    userSuffix: userSuffix,
+    passwordTemplate: passwordTemplate,
+    formatUserOption: formatUserOption,
+    formatPassOption: formatPassOption,
+    nombreBaseLimpio: nombreBaseLimpio
+  };
+}
+
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Aplicar patrón a un nombre con los formatos seleccionados
+function applyPatternToName(name, patternInfo) {
+  // Aplicar formato al nombre según la opción del usuario
+  const nombreFormateado = aplicarFormatoPersonalizado(name, patternInfo.formatUserOption);
+  const nombreFormateadoAlt = patternInfo.formatUserOption === '2' ? 
+    aplicarFormatoPersonalizado(name, '1') : 
+    aplicarFormatoPersonalizado(name, '2');
+  
+  // Construir usuario
+  const username = nombreFormateado + patternInfo.userSuffix;
+  
+  // Construir contraseña
+  let password = patternInfo.passwordTemplate;
+  
+  if (password.includes("{{NOMBRE}}")) {
+    if (patternInfo.formatPassOption === '1') {
+      password = password.replace(/\{\{NOMBRE\}\}/g, aplicarFormatoPersonalizado(name, '1'));
+    } else if (patternInfo.formatPassOption === '2') {
+      password = password.replace(/\{\{NOMBRE\}\}/g, aplicarFormatoPersonalizado(name, '2'));
+    } else {
+      password = password.replace(/\{\{NOMBRE\}\}/g, aplicarFormatoPersonalizado(name, '3'));
+    }
+  }
+  
+  if (password.includes("{{NOMBRE_ALT}}")) {
+    if (patternInfo.formatPassOption === '1') {
+      password = password.replace(/\{\{NOMBRE_ALT\}\}/g, aplicarFormatoPersonalizado(name, '1'));
+    } else if (patternInfo.formatPassOption === '2') {
+      password = password.replace(/\{\{NOMBRE_ALT\}\}/g, aplicarFormatoPersonalizado(name, '2'));
+    } else {
+      password = password.replace(/\{\{NOMBRE_ALT\}\}/g, aplicarFormatoPersonalizado(name, '3'));
+    }
+  }
+  
+  return `${username}:${password}`;
+}
+
+// Normalizar datos de nombres
+function normalizeNamesData(namesArray) {
+  const normalizedSet = new Set();
+  
+  namesArray.forEach(line => {
+    if (!line.trim()) return;
+    let cleanedLine = line.trim();
+    let parts = cleanedLine.split(':');
+    let username = parts[0].trim();
+    username = username.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/g, '');
+    if (!username) return;
+    
+    normalizedSet.add(username.toLowerCase());
+  });
+  
+  return Array.from(normalizedSet).sort();
+}
+
+// Manejar carga de archivo de nombres
+function handleNamesFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const content = e.target.result;
+    const rawNames = content.split('\n').filter(line => line.trim());
+    nombresPersonalizados = normalizeNamesData(rawNames);
+    
+    const infoElement = document.getElementById('namesInfo');
+    infoElement.innerHTML = `<strong>Archivo:</strong> ${file.name} <br><span class="badge">${nombresPersonalizados.length}</span> nombres únicos`;
+    
+    document.getElementById('namesPreview').style.display = 'none';
+  };
+  reader.readAsText(file);
+}
+
+// Vista previa de nombres
+function previewNames() {
+  if (nombresPersonalizados.length === 0) {
+    document.getElementById('namesPreview').textContent = "No hay nombres para mostrar. Carga un archivo primero.";
+    document.getElementById('namesPreview').style.display = 'block';
+    return;
+  }
+  
+  const previewElement = document.getElementById('namesPreview');
+  const previewCount = Math.min(10, nombresPersonalizados.length);
+  let previewText = "📋 Primeros " + previewCount + " nombres:\n";
+  for (let i = 0; i < previewCount; i++) {
+    previewText += `${i + 1}. ${nombresPersonalizados[i]}\n`;
+  }
+  if (nombresPersonalizados.length > 10) {
+    previewText += `...y ${nombresPersonalizados.length - 10} más`;
+  }
+  previewElement.textContent = previewText;
+  previewElement.style.display = 'block';
+}
+
+// Cargar patrones desde archivo
+function handlePatternsFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('combinationPatterns').value = e.target.result;
+    mostrarMensaje('resultadoGen', `📝 Patrones cargados correctamente`);
+  };
+  reader.readAsText(file);
+}
+
+// Guardar patrones
+function savePatternsToFile() {
+  const patterns = document.getElementById('combinationPatterns').value;
+  const blob = new Blob([patterns], {type: 'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'patrones_combinacion.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Generar combinaciones personalizadas
+async function generarCombosPersonalizados() {
+  if (nombresPersonalizados.length === 0) {
+    mostrarMensaje('resultadoGen', '❌ No hay nombres cargados. Carga un archivo de nombres primero.', true);
+    return false;
+  }
+  
+  const patternsText = document.getElementById('combinationPatterns').value;
+  const patterns = patternsText.split('\n').filter(line => line.trim());
+  
+  if (patterns.length === 0) {
+    mostrarMensaje('resultadoGen', '❌ No hay patrones de combinación. Agrega al menos un patrón.', true);
+    return false;
+  }
+  
+  const formatUserOption = document.getElementById('formatUserPersonalizado').value;
+  const formatPassOption = document.getElementById('formatPassPersonalizado').value;
+  const nombreArchivo = document.getElementById('file9').value || 'combos_personalizados';
+  const btnDescargar = document.getElementById('btnDescargarGenerador');
+  
+  btnDescargar.disabled = true;
+  btnDescargar.textContent = '⏳ Generando...';
+  
+  mostrarMensaje('resultadoGen', `🚀 Generando combos personalizados...`);
+  
+  // Analizar cada patrón
+  const patternTemplates = [];
+  for (const pattern of patterns) {
+    const template = analyzePattern(pattern, formatUserOption, formatPassOption);
+    if (template) {
+      patternTemplates.push(template);
+    }
+  }
+  
+  if (patternTemplates.length === 0) {
+    mostrarMensaje('resultadoGen', '❌ No se pudo analizar ningún patrón válido. Asegúrate de que los patrones tengan un nombre base (ej: juan123:juan1234)', true);
+    btnDescargar.disabled = false;
+    btnDescargar.textContent = '💾 Descargar Combos Generados';
+    return false;
+  }
+  
+  const combinations = new Set();
+  const total = nombresPersonalizados.length * patternTemplates.length;
+  let processed = 0;
+  
+  mostrarProgreso(0, total);
+  
+  // Aplicar cada patrón a cada nombre
+  for (const name of nombresPersonalizados) {
+    for (const template of patternTemplates) {
+      const combo = applyPatternToName(name, template);
+      combinations.add(combo);
+      processed++;
+      mostrarProgreso(processed, total);
+      if (delayGeneracion > 0) await new Promise(r => setTimeout(r, delayGeneracion));
+    }
+  }
+  
+  ocultarProgreso();
+  
+  ultimosCombosGenerados = Array.from(combinations).sort();
+  
+  if (ultimosCombosGenerados.length > 0) {
+    btnDescargar.disabled = false;
+    btnDescargar.textContent = '💾 Descargar Combos Generados';
+    
+    // Mostrar ejemplos
+    const ejemplos = ultimosCombosGenerados.slice(0, 5);
+    let ejemplosText = ejemplos.map((c, i) => `${i+1}. ${c}`).join('\n');
+    
+    mostrarMensaje('resultadoGen', `✅ ${ultimosCombosGenerados.length} combos únicos generados.\n📊 Nombres: ${nombresPersonalizados.length}\n📝 Patrones: ${patternTemplates.length}\n🎨 Formato usuario: ${formatUserOption === '1' ? 'Minúscula' : (formatUserOption === '2' ? 'Primera mayúscula' : 'Ambos')}\n🎨 Formato contraseña: ${formatPassOption === '1' ? 'Minúscula' : (formatPassOption === '2' ? 'Primera mayúscula' : 'Ambos')}\n\n📋 Ejemplos:\n${ejemplosText}\n\n📁 Presiona "Descargar" para guardar el archivo.`);
+  } else {
+    btnDescargar.textContent = '💾 Descargar Combos Generados';
+    mostrarMensaje('resultadoGen', `❌ Error al generar los combos`, true);
+  }
+  
+  return true;
+}
+
+// ============= GENERADOR PRINCIPAL =============
+async function generarCombos(tipo, cantidad, params, progressCallback) {
+  const combosSet = new Set();
+  const combosArray = [];
+  let intentos = 0;
+  const maxIntentos = cantidad * 2;
+  
+  while (combosSet.size < cantidad && intentos < maxIntentos) {
+    intentos++;
+    const { nombre, apellido } = await getRandomNameMultiAPI();
+    let combo = '';
+    
+    switch(parseInt(tipo)) {
+      case 1:
+        const num1 = Math.floor(Math.random() * (2050 - 1996 + 1)) + 1996;
+        const nombreBase1 = aplicarFormato(nombre, params.formatUser);
+        const nombreBasePass1 = aplicarFormato(nombre, params.formatPass);
+        let usuario1, contrasena1;
+        if (params.userCombo === '1') usuario1 = `${nombreBase1}${num1}`;
+        else if (params.userCombo === '2') usuario1 = `${num1}${nombreBase1}`;
+        else usuario1 = Math.random() > 0.5 ? `${nombreBase1}${num1}` : `${num1}${nombreBase1}`;
+        if (params.passCombo === '1') contrasena1 = `${nombreBasePass1}${num1}`;
+        else if (params.passCombo === '2') contrasena1 = `${num1}${nombreBasePass1}`;
+        else contrasena1 = Math.random() > 0.5 ? `${nombreBasePass1}${num1}` : `${num1}${nombreBasePass1}`;
+        combo = `${usuario1}:${contrasena1}`;
+        break;
+      case 2:
+        const nombreUsuario = aplicarFormato(nombre, params.formatUser);
+        let nombrePassword;
+        if (params.formatoCombo === '1') nombrePassword = aplicarFormato(nombre, params.formatPass);
+        else if (params.formatoCombo === '2') nombrePassword = aplicarFormato(apellido, params.formatPass);
+        else nombrePassword = Math.random() > 0.5 ? aplicarFormato(nombre, params.formatPass) : aplicarFormato(apellido, params.formatPass);
+        combo = `${nombreUsuario}:${nombrePassword}`;
+        break;
+      case 3:
+        const num3 = Math.floor(Math.random() * 999) + 1;
+        const nombreBase3 = aplicarFormato(nombre, params.formatUser);
+        const nombreBasePass3 = aplicarFormato(nombre, params.formatPass);
+        let usuario3, contrasena3;
+        if (params.userCombo === '1') usuario3 = `${nombreBase3}${num3}`;
+        else if (params.userCombo === '2') usuario3 = `${num3}${nombreBase3}`;
+        else usuario3 = Math.random() > 0.5 ? `${nombreBase3}${num3}` : `${num3}${nombreBase3}`;
+        if (params.passCombo === '1') contrasena3 = `${nombreBasePass3}${num3}`;
+        else if (params.passCombo === '2') contrasena3 = `${num3}${nombreBasePass3}`;
+        else contrasena3 = Math.random() > 0.5 ? `${nombreBasePass3}${num3}` : `${num3}${nombreBasePass3}`;
+        combo = `${usuario3}:${contrasena3}`;
+        break;
+      case 4:
+        let tipoAlfa = params.tipoAlfa === '1' ? 'letras' : (params.tipoAlfa === '2' ? 'letras_numeros' : 'letras');
+        let caseType = '';
+        if (params.caseType === '1') caseType = 'mayusculas';
+        else if (params.caseType === '2') caseType = 'minusculas';
+        else caseType = 'ambas';
+        let username4 = randomAlphanumeric(params.userLen, tipoAlfa, caseType);
+        let password4 = randomAlphanumeric(params.passLen, tipoAlfa, caseType);
+        if (params.tipoAlfa === '3') {
+          const year = Math.floor(Math.random() * (2020 - 1900 + 1)) + 1900;
+          if (params.yearPos === 'left') username4 = username4 + year;
+          else if (params.yearPos === 'right') password4 = password4 + year;
+          else { username4 = username4 + year; password4 = password4 + year; }
+        }
+        combo = `${username4}:${password4}`;
+        break;
+      case 5:
+        const numsSec = ['123', '1234', '12345', '123456', '1234567', '12345678', '123456789'];
+        const num5 = numsSec[Math.floor(Math.random() * numsSec.length)];
+        const nombreBase5 = aplicarFormato(nombre, '1');
+        let usuario5;
+        if (params.userCombo === '1') usuario5 = `${nombreBase5}${num5}`;
+        else if (params.userCombo === '2') usuario5 = `${num5}${nombreBase5}`;
+        else usuario5 = Math.random() > 0.5 ? `${nombreBase5}${num5}` : `${num5}${nombreBase5}`;
+        combo = `${usuario5}:${usuario5}`;
+        break;
+      case 6:
+        const num6 = Math.floor(Math.random() * 9999999) + 1;
+        const nombreBase6 = aplicarFormato(nombre, '1');
+        let usuario6;
+        if (params.userCombo === '1') usuario6 = `${nombreBase6}${num6}`;
+        else if (params.userCombo === '2') usuario6 = `${num6}${nombreBase6}`;
+        else usuario6 = Math.random() > 0.5 ? `${nombreBase6}${num6}` : `${num6}${nombreBase6}`;
+        combo = `${usuario6}:${usuario6}`;
+        break;
+      case 7:
+        let userNum = '', passNum = '';
+        for (let j = 0; j < params.userLen; j++) userNum += Math.floor(Math.random() * 10);
+        if (params.tipoPass === '1') {
+          const base = '123456789';
+          const veces = Math.ceil(params.passLen / 9);
+          passNum = (base.repeat(veces)).substring(0, params.passLen);
+        } else if (params.tipoPass === '2') {
+          for (let j = 0; j < params.passLen; j++) passNum += Math.floor(Math.random() * 10);
+        } else {
+          if (Math.random() > 0.5) {
+            const base = '123456789';
+            const veces = Math.ceil(params.passLen / 9);
+            passNum = (base.repeat(veces)).substring(0, params.passLen);
+          } else {
+            for (let j = 0; j < params.passLen; j++) passNum += Math.floor(Math.random() * 10);
+          }
+        }
+        combo = `${userNum}:${passNum}`;
+        break;
+      case 8:
+        const nombreFormateado = aplicarFormato(nombre, params.formatUser);
+        let numUsuario;
+        if (params.tipoNumUser === '1') numUsuario = Math.floor(Math.random() * 999) + 1;
+        else if (params.tipoNumUser === '2') numUsuario = Math.floor(Math.random() * (2028 - 2022 + 1)) + 2022;
+        else numUsuario = Math.random() > 0.5 ? (Math.floor(Math.random() * 999) + 1) : (Math.floor(Math.random() * (2028 - 2022 + 1)) + 2022);
+        let tipoPass8 = params.tipoPass === '1' ? 'letras' : (params.tipoPass === '2' ? 'letras_numeros' : 'letras');
+        let passAlfa = randomAlphanumeric(params.passLen, tipoPass8, 'ambas');
+        if (params.tipoPass === '3') {
+          const year = Math.floor(Math.random() * (2020 - 1900 + 1)) + 1900;
+          if (Math.random() > 0.5) passAlfa = passAlfa + year;
+          else passAlfa = year + passAlfa;
+        }
+        combo = `${nombreFormateado}${numUsuario}:${passAlfa}`;
+        break;
+    }
+    
+    if (!combosSet.has(combo)) {
+      combosSet.add(combo);
+      combosArray.push(combo);
+      if (progressCallback) progressCallback(combosSet.size, cantidad);
+    }
+    if (delayGeneracion > 0) await new Promise(r => setTimeout(r, delayGeneracion));
+  }
+  return combosArray;
+}
+
+function downloadFile(content, filename) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = filename.endsWith('.txt') ? filename : filename + '.txt';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function mostrarMensaje(divId, texto, esError = false) {
+  const div = document.getElementById(divId);
+  div.classList.add('visible');
+  div.innerHTML = `<div style="color: ${esError ? '#ff6b6b' : '#00ff88'}">${texto}</div>`;
+  setTimeout(() => {
+    div.classList.remove('visible');
+  }, 4000);
+}
+
+function mostrarProgreso(actual, total) {
+  const progressContainer = document.getElementById('progressContainer');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const progressStats = document.getElementById('progressStats');
+  progressContainer.classList.add('visible');
+  const porcentaje = (actual / total) * 100;
+  progressFill.style.width = `${porcentaje}%`;
+  progressText.innerHTML = `🚀 Generando: ${actual} de ${total} combos (${Math.round(porcentaje)}%)`;
+  progressStats.innerHTML = `⚡ Velocidad: ${delayGeneracion}ms por combo | ✅ Únicos: ${actual} | 🎯 Meta: ${total}`;
+}
+
+function ocultarProgreso() {
+  const progressContainer = document.getElementById('progressContainer');
+  progressContainer.classList.remove('visible');
+}
+
+async function generarYGuardar(tipo, config) {
+  const nombreArchivo = config.nombreArchivo || `combos_tipo_${tipo}`;
+  const cantidad = config.cantidad;
+  const btnDescargar = document.getElementById('btnDescargarGenerador');
+  
+  btnDescargar.disabled = true;
+  btnDescargar.textContent = '⏳ Generando...';
+  
+  mostrarMensaje('resultadoGen', `🚀 Generando ${cantidad} combos...`);
+  
+  ultimosCombosGenerados = await generarCombos(tipo, cantidad, config, mostrarProgreso);
+  
+  ocultarProgreso();
+  
+  if (ultimosCombosGenerados.length > 0) {
+    btnDescargar.disabled = false;
+    btnDescargar.textContent = '💾 Descargar Combos Generados';
+    mostrarMensaje('resultadoGen', `✅ ${ultimosCombosGenerados.length} combos únicos generados.\n🎯 Duplicados evitados: ${cantidad - ultimosCombosGenerados.length}\n📁 Presiona "Descargar" para guardar el archivo.`);
+  } else {
+    btnDescargar.textContent = '💾 Descargar Combos Generados';
+    mostrarMensaje('resultadoGen', `❌ Error al generar los combos`, true);
+  }
+}
+
+document.getElementById('btnDescargarGenerador').onclick = () => {
+  if (ultimosCombosGenerados.length > 0) {
+    const panelActivo = document.querySelector('.panel-combos.active');
+    let nombreArchivo = 'combos_generados';
+    if (panelActivo) {
+      const inputNombre = panelActivo.querySelector('input[type="text"]');
+      if (inputNombre) nombreArchivo = inputNombre.value;
+    }
+    downloadFile(ultimosCombosGenerados.join('\n'), nombreArchivo);
+    mostrarMensaje('resultadoGen', `💾 Archivo "${nombreArchivo}.txt" descargado con ${ultimosCombosGenerados.length} combos.`);
+  } else {
+    mostrarMensaje('resultadoGen', `⚠️ No hay combos generados. Primero genera los combos.`, true);
+  }
+};
+
+// ============= FUNCIONES PARA UNIR COMBOS =============
+function mostrarArchivosSeleccionados(input, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (input.files.length === 0) {
+    container.innerHTML = '<div style="color:#87ceeb; text-align:center;">No hay archivos seleccionados</div>';
+    return;
+  }
+  Array.from(input.files).forEach((file, idx) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<input type="checkbox" checked data-index="${idx}"><label>📄 ${file.name} (${(file.size/1024).toFixed(2)} KB)</label>`;
+    container.appendChild(div);
+  });
+}
+
+document.getElementById('unirFileInput').addEventListener('change', (e) => {
+  mostrarArchivosSeleccionados(e.target, 'unirFileList');
+});
+
+document.getElementById('btnProcesarUnir').onclick = async () => {
+  const input = document.getElementById('unirFileInput');
+  const resultadoDiv = document.getElementById('unirResultado');
+  const btnDescargar = document.getElementById('btnDescargarUnir');
+  
+  if (input.files.length === 0) {
+    mostrarMensaje('unirResultado', '❌ Selecciona al menos un archivo', true);
+    return;
+  }
+  
+  resultadoDiv.classList.add('visible');
+  resultadoDiv.innerHTML = '<div style="color:#00ff88;">🔄 Leyendo archivos...</div>';
+  btnDescargar.disabled = true;
+  
+  let todasLasLineas = [];
+  let archivosProcesados = 0;
+  
+  for (const file of input.files) {
+    try {
+      const texto = await file.text();
+      const lineas = texto.split(/\r?\n/).filter(l => l.trim() !== '');
+      todasLasLineas.push(...lineas);
+      archivosProcesados++;
+      resultadoDiv.innerHTML = `<div style="color:#00ff88;">📖 Procesados ${archivosProcesados}/${input.files.length} archivos...</div>`;
+    } catch(e) {
+      resultadoDiv.innerHTML = `<div style="color:#ff6b6b;">❌ Error leyendo ${file.name}</div>`;
+    }
+  }
+  
+  const originales = todasLasLineas.length;
+  ultimoResultadoUnion = [...new Set(todasLasLineas)];
+  const duplicados = originales - ultimoResultadoUnion.length;
+  
+  resultadoDiv.innerHTML = `
+    <div style="color:#00ff88;">
+      ✅ Procesado correctamente<br>
+      📊 Archivos procesados: ${archivosProcesados}<br>
+      📝 Líneas originales: ${originales}<br>
+      🎯 Líneas únicas: ${ultimoResultadoUnion.length}<br>
+      🗑️ Duplicados eliminados: ${duplicados}<br>
+      📁 Presiona "Descargar" para guardar el archivo.
+    </div>
+  `;
+  btnDescargar.disabled = false;
+};
+
+document.getElementById('btnDescargarUnir').onclick = () => {
+  if (ultimoResultadoUnion && ultimoResultadoUnion.length > 0) {
+    const nombreArchivo = document.getElementById('unirNombre').value || 'combos_unidos';
+    downloadFile(ultimoResultadoUnion.join('\n'), nombreArchivo);
+    mostrarMensaje('unirResultado', `💾 Archivo "${nombreArchivo}.txt" descargado con ${ultimoResultadoUnion.length} combos.`);
+  } else {
+    mostrarMensaje('unirResultado', `⚠️ No hay datos procesados. Primero procesa los archivos.`, true);
+  }
+};
+
+// ============= FUNCIONES PARA ELIMINAR DUPLICADOS =============
+document.getElementById('btnProcesarDup').onclick = async () => {
+  const input = document.getElementById('dupFileInput');
+  const resultadoDiv = document.getElementById('dupResultado');
+  const btnDescargar = document.getElementById('btnDescargarDup');
+  
+  if (input.files.length === 0) {
+    mostrarMensaje('dupResultado', '❌ Selecciona un archivo', true);
+    return;
+  }
+  
+  resultadoDiv.classList.add('visible');
+  resultadoDiv.innerHTML = '<div style="color:#00ff88;">🔄 Leyendo archivo...</div>';
+  btnDescargar.disabled = true;
+  
+  try {
+    const texto = await input.files[0].text();
+    const lineas = texto.split(/\r?\n/).filter(l => l.trim() !== '');
+    const originales = lineas.length;
+    ultimoResultadoDup = [...new Set(lineas)];
+    const duplicados = originales - ultimoResultadoDup.length;
+    
+    resultadoDiv.innerHTML = `
+      <div style="color:#00ff88;">
+        ✅ Procesado correctamente<br>
+        📝 Líneas originales: ${originales}<br>
+        🎯 Líneas únicas: ${ultimoResultadoDup.length}<br>
+        🗑️ Duplicados eliminados: ${duplicados}<br>
+        📁 Presiona "Descargar" para guardar el archivo.
+      </div>
+    `;
+    btnDescargar.disabled = false;
+  } catch(e) {
+    resultadoDiv.innerHTML = '<div style="color:#ff6b6b;">❌ Error leyendo el archivo</div>';
+  }
+};
+
+document.getElementById('btnDescargarDup').onclick = () => {
+  if (ultimoResultadoDup && ultimoResultadoDup.length > 0) {
+    const nombreArchivo = document.getElementById('dupNombre').value || 'combos_sin_duplicados';
+    downloadFile(ultimoResultadoDup.join('\n'), nombreArchivo);
+    mostrarMensaje('dupResultado', `💾 Archivo "${nombreArchivo}.txt" descargado con ${ultimoResultadoDup.length} combos.`);
+  } else {
+    mostrarMensaje('dupResultado', `⚠️ No hay datos procesados. Primero procesa el archivo.`, true);
+  }
+};
+
+// ============= PESTAÑAS =============
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  });
+});
+
+// ============= EVENTOS DE LOS BOTONES DE TIPO =============
+document.querySelectorAll('.tipo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tipo = btn.getAttribute('data-tipo');
+    const ejemplo = btn.getAttribute('data-ejemplo') || 'usuario:contraseña';
+    mostrarEjemploSobreBoton(btn, ejemplo);
+    
+    document.querySelectorAll('.panel-combos').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel${tipo}`).classList.add('active');
+    document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ============= EVENTOS DE GENERACIÓN =============
+document.getElementById('gen1').onclick = () => generarYGuardar(1, {
+  nombreArchivo: document.getElementById('file1').value, cantidad: parseInt(document.getElementById('cant1').value) || 100,
+  userCombo: document.getElementById('userCombo1').value, passCombo: document.getElementById('passCombo1').value,
+  formatUser: document.getElementById('formatUser1').value, formatPass: document.getElementById('formatPass1').value
+});
+document.getElementById('gen2').onclick = () => generarYGuardar(2, {
+  nombreArchivo: document.getElementById('file2').value, cantidad: parseInt(document.getElementById('cant2').value) || 100,
+  formatoCombo: document.getElementById('formatoCombo2').value,
+  formatUser: document.getElementById('formatUser2').value, formatPass: document.getElementById('formatPass2').value
+});
+document.getElementById('gen3').onclick = () => generarYGuardar(3, {
+  nombreArchivo: document.getElementById('file3').value, cantidad: parseInt(document.getElementById('cant3').value) || 100,
+  userCombo: document.getElementById('userCombo3').value, passCombo: document.getElementById('passCombo3').value,
+  formatUser: document.getElementById('formatUser3').value, formatPass: document.getElementById('formatPass3').value
+});
+document.getElementById('gen4').onclick = () => generarYGuardar(4, {
+  nombreArchivo: document.getElementById('file4').value, cantidad: parseInt(document.getElementById('cant4').value) || 100,
+  userLen: parseInt(document.getElementById('userLen4').value) || 8, passLen: parseInt(document.getElementById('passLen4').value) || 8,
+  tipoAlfa: document.getElementById('tipoAlfa4').value, caseType: document.getElementById('caseAlfa4').value, yearPos: document.getElementById('yearPos4').value
+});
+document.getElementById('gen5').onclick = () => generarYGuardar(5, {
+  nombreArchivo: document.getElementById('file5').value, cantidad: parseInt(document.getElementById('cant5').value) || 100,
+  userCombo: document.getElementById('userCombo5').value
+});
+document.getElementById('gen6').onclick = () => generarYGuardar(6, {
+  nombreArchivo: document.getElementById('file6').value, cantidad: parseInt(document.getElementById('cant6').value) || 100,
+  userCombo: document.getElementById('userCombo6').value
+});
+document.getElementById('gen7').onclick = () => generarYGuardar(7, {
+  nombreArchivo: document.getElementById('file7').value, cantidad: parseInt(document.getElementById('cant7').value) || 100,
+  userLen: parseInt(document.getElementById('userLen7').value) || 5, passLen: parseInt(document.getElementById('passLen7').value) || 5,
+  tipoPass: document.getElementById('tipoPass7').value
+});
+document.getElementById('gen8').onclick = () => generarYGuardar(8, {
+  nombreArchivo: document.getElementById('file8').value, cantidad: parseInt(document.getElementById('cant8').value) || 100,
+  tipoNumUser: document.getElementById('tipoNumUser8').value, passLen: parseInt(document.getElementById('passLen8').value) || 8,
+  tipoPass: document.getElementById('tipoPass8').value, formatUser: document.getElementById('formatUser8').value
+});
+
+// Eventos para el panel personalizado (tipo 9)
+document.getElementById('gen9').onclick = () => {
+  generarCombosPersonalizados();
+};
+
+// Configurar eventos de carga de archivos para el panel personalizado
+const dropZoneNames = document.getElementById('dropZoneNames');
+const namesFileInput = document.getElementById('namesFileInput');
+
+dropZoneNames.addEventListener('click', () => {
+  namesFileInput.click();
+});
+
+dropZoneNames.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZoneNames.classList.add('drag-over');
+});
+
+dropZoneNames.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZoneNames.classList.remove('drag-over');
+});
+
+dropZoneNames.addEventListener('drop', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropZoneNames.classList.remove('drag-over');
+  
+  if (e.dataTransfer.files.length) {
+    namesFileInput.files = e.dataTransfer.files;
+    handleNamesFileSelect({target: namesFileInput});
+  }
+});
+
+namesFileInput.addEventListener('change', handleNamesFileSelect);
+document.getElementById('previewNamesBtn').addEventListener('click', previewNames);
+document.getElementById('loadPatternsBtn').addEventListener('click', () => {
+  document.getElementById('loadPatternsFileInput').click();
+});
+document.getElementById('savePatternsBtn').addEventListener('click', savePatternsToFile);
+document.getElementById('loadPatternsFileInput').addEventListener('change', handlePatternsFileSelect);
+
+// Inicializar el panel activo
+document.querySelector('.tipo-btn').classList.add('active');
+</script>
+</body>
+</html>
